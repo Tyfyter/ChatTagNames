@@ -1,0 +1,1 @@
+Makes item tags in names work in chat messages and lets prefixes apply to all items in item tags

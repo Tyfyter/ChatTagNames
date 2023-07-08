@@ -1,0 +1,40 @@
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour.HookGen;
+using System;
+using System.Linq;
+using System.Reflection;
+using Terraria;
+using Terraria.ModLoader;
+using Terraria.UI.Chat;
+
+namespace ChatTagNames {
+	public class ChatTagNames : Mod {
+		public override void Load() {
+			Terraria.GameContent.UI.Chat.On_NameTagHandler.GenerateTag += GenerateTag;
+			Terraria.GameContent.UI.Chat.IL_ItemTagHandler.Terraria_UI_Chat_ITagHandler_Parse += ItemTagHandler_Terraria_UI_Chat_ITagHandler_Parse;
+		}
+
+		private void ItemTagHandler_Terraria_UI_Chat_ITagHandler_Parse(ILContext il) {
+			ILCursor c = new ILCursor(il);
+			if (c.TryGotoNext(MoveType.Before, i => i.MatchCallOrCallvirt<Item>("Prefix"))) {
+				c.Emit(OpCodes.Ldloc_0);
+				c.EmitDelegate((Action<Item>)((Item i) => {
+					i.AllowReforgeForStackableItem = true;
+				}));
+				c.GotoPrev(i => i.MatchLdloc(out _));
+				if (c.TryGotoNext(MoveType.After, i => i.MatchCallOrCallvirt<Item>("Prefix"))) {
+					c.Emit(OpCodes.Ldloc_0);
+					c.Emit(OpCodes.Ldloc_S, (byte)7);
+					c.EmitDelegate((Action<Item, int>)((Item i, int p) => {
+						i.prefix = p;
+					}));
+				}
+			}
+		}
+
+		public static string GenerateTag(Terraria.GameContent.UI.Chat.On_NameTagHandler.orig_GenerateTag orig, string name) {
+			return "<" + name + ">";
+		}
+	}
+}
