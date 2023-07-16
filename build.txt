@@ -2,3 +2,4 @@ displayName = Chat Tag Names
 author = Tyfyter2002
 version = 1.0.0.1
 side = NoSync
+homepage = https://tyfyter.github.io/
